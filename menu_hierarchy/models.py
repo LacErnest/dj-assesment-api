@@ -2,7 +2,8 @@ import uuid
 from django.db import models
 
 class MenuItem(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    #id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
     name = models.CharField(max_length=255, db_index=True)
     parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name='children', null=True, blank=True, db_index=True)
     depth = models.IntegerField(default=0, db_index=True)
