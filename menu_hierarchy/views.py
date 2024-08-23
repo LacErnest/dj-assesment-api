@@ -133,6 +133,7 @@ class MenuItemViewSet(viewsets.ModelViewSet):
             tree = {
                 'id': item.id,
                 'name': item.name,
+                'parent': item.parent.name if item.parent is not None else None,
                 'depth': item.depth,
                 'children': []
             }
