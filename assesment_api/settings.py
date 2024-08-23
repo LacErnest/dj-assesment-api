@@ -89,10 +89,10 @@ WSGI_APPLICATION = 'assesment_api.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dcvl1p5kr4s0b3',
-        'USER': 'ucanr9mb4jancm',
-        'PASSWORD': 'p189908c708c464a802bccb6aee7f533aeddc6fa7ba24b55bd9788b31c3b168ea',
-        'HOST': 'cat670aihdrkt1.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',
+        'NAME': 'd55ahb67r5vkk',
+        'USER': 'u63jdfsm4acrbd',
+        'PASSWORD': 'pd20b60af39a12f39f77c9392b53121c67e7480c71a674b2b007d24e591b560ce',
+        'HOST': 'cbec45869p4jbu.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com',
         'PORT': '5432',
     }
 }
@@ -150,5 +150,5 @@ STATIC_URL = 'static/'
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+#DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
