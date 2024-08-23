@@ -40,7 +40,7 @@ Usage:
 
 ## Tests
 
-The `tests.py` file contains unit tests for the MenuItem model and API endpoints. Run tests using:
+The `tests.py` file contains unit tests for the API. Run tests using:
 
 `python manage.py test`
 
