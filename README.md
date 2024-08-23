@@ -36,6 +36,7 @@ This script generates a sample menu hierarchy:
 
 Usage:
 
+`python create_menu_items.py`
 
 ## Tests
 
