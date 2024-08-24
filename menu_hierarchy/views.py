@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from django.core.exceptions import ValidationError
 from .models import MenuItem
 from .serializers import MenuItemSerializer
 from drf_yasg.utils import swagger_auto_schema
@@ -61,8 +62,11 @@ class MenuItemViewSet(viewsets.ModelViewSet):
 
     @swagger_auto_schema(
         request_body=MenuItemSerializer,
-        responses={201: openapi.Response('Created', MenuItemSerializer)},
-        operation_description="Create a new `MenuItem` instance. Calculate the depth based on the parent item."
+        responses={
+            201: openapi.Response('Created', MenuItemSerializer),
+            400: 'Bad Request - Invalid input or parent item does not exist.'
+        },
+        operation_description="Create a new `MenuItem` instance. Automatically calculates the depth based on the parent item."
     )
     def create(self, request, *args, **kwargs):
         data = request.data.copy()
@@ -78,10 +82,61 @@ class MenuItemViewSet(viewsets.ModelViewSet):
             data['depth'] = 0
 
         serializer = self.get_serializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        try:
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    @swagger_auto_schema(
+        request_body=MenuItemSerializer,
+        responses={
+            200: openapi.Response('Updated', MenuItemSerializer),
+            400: 'Bad Request - Invalid input or parent item does not exist.'
+        },
+        operation_description="Update an existing `MenuItem` instance. Automatically recalculates the depth based on the parent item."
+    )
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        data = request.data.copy()
+
+        parent_id = data.get('parent', None)
+        if parent_id:
+            try:
+                parent = MenuItem.objects.get(id=parent_id)
+                data['depth'] = parent.depth + 1
+            except MenuItem.DoesNotExist:
+                return Response({'error': 'Parent item does not exist.'}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            data['depth'] = 0
+
+        serializer = self.get_serializer(instance, data=data, partial=partial)
+        try:
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
+    def perform_create(self, serializer):
+        try:
+            serializer.save()
+        except ValidationError as e:
+            raise ValidationError(str(e))
+
+    def perform_update(self, serializer):
+        try:
+            serializer.save()
+        except ValidationError as e:
+            raise ValidationError(str(e))
 
     @swagger_auto_schema(
         responses={

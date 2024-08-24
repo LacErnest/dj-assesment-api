@@ -17,3 +17,9 @@ class MenuItemSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation['parent'] = instance.parent.name if instance.parent else None
         return representation
+
+    def validate_name(self, value):
+        instance = getattr(self, 'instance', None)
+        if MenuItem.objects.filter(name=value).exclude(pk=instance.pk if instance else None).exists():
+            raise serializers.ValidationError("A menu item with this name already exists.")
+        return value
