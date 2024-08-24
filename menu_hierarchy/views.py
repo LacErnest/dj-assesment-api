@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from .models import MenuItem
 from .serializers import MenuItemSerializer
 from drf_yasg.utils import swagger_auto_schema
@@ -204,11 +206,27 @@ class MenuItemViewSet(viewsets.ModelViewSet):
             return [build_tree(root_item)]
 
     @swagger_auto_schema(
-        responses={204: 'No Content', 400: 'Bad Request'},
-        operation_description="Delete a specific `MenuItem` instance. Ensure that it does not have any children before deletion."
+        responses={
+            204: 'No Content - Successfully deleted the item and its children.',
+            400: 'Bad Request - Cannot delete the item due to an issue.'
+        },
+        operation_description="Delete a `MenuItem` instance. This operation also deletes all child items recursively."
     )
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.children.exists():
-            return Response({'error': 'Cannot delete a parent item with children.'}, status=status.HTTP_400_BAD_REQUEST)
-        return super(MenuItemViewSet, self).destroy(request, *args, **kwargs)
+        try:
+            with transaction.atomic():
+                self._delete_children(instance)
+                instance.delete()
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def _delete_children(self, item):
+        """
+        Recursively delete all children of the given item.
+        """
+        children = item.children.all()
+        for child in children:
+            self._delete_children(child)
+            child.delete()
