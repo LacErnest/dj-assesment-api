@@ -15,6 +15,11 @@ class MenuItem(models.Model):
             models.Index(fields=['parent', 'depth']),
             models.Index(fields=['created_at', 'updated_at']),
         ]
+    
+    def update_children_depth(self):
+        for child in self.children.all():
+            child.depth = self.depth + 1
+            child.save()
 
     def save(self, *args, **kwargs):
         if self.parent:
@@ -22,6 +27,7 @@ class MenuItem(models.Model):
         else:
             self.depth = 0
         super(MenuItem, self).save(*args, **kwargs)
+        self.update_children_depth()
     
     def parent_name(self):
         return self.parent.name if self.parent else None
