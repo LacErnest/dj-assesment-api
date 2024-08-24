@@ -19,10 +19,6 @@ The `MenuItem` represents a single item in the menu hierarchy.
 - Indexed fields for optimized queries
 - Parent name accessor
 
-## API Endpoints
-
-(Add your API endpoints and their descriptions here)
-
 ## Scripts
 
 ### create_menu_items.py
